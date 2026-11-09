@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flip the Switch</title>
+<meta name="description" content="Remove one thing from the world today and see what happens to population, GDP and life expectancy over the next 100 years.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400;62..125,500;62..125,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6EAEE; --panel:#F7F8FA; --ink:#17212E; --muted:#5E6A79; --line:#C6CED8;
+  --on:#1F7D75; --off:#B9442F; --amber:#DE962B; --band:rgba(222,150,43,.16);
+  --base:#7B8794; --knob:#FBFCFD; --focus:#1F7D75;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#111923; --panel:#19232F; --ink:#E8EDF2; --muted:#98A6B5; --line:#2C3947;
+    --on:#36A79D; --off:#D6644D; --amber:#F0A93A; --band:rgba(240,169,58,.18);
+    --base:#7C8A99; --knob:#F4F6F8; --focus:#36A79D;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.45;font-variation-settings:"wdth" 100}
+a{color:inherit}
+h1{font-size:clamp(2.6rem,8vw,4.6rem);line-height:.95;margin:0;font-weight:800;font-variation-settings:"wdth" 118;letter-spacing:-.02em}
+h2{font-size:1.05rem;margin:0 0 .6rem;font-weight:800;font-variation-settings:"wdth" 110}
+p{margin:.4rem 0}
+.wrap{max-width:1180px;margin:0 auto;padding:1.25rem 1rem 3rem}
+header{padding:1.5rem 0 1.25rem}
+header p.lede{font-size:1.1rem;max-width:34rem;margin-top:1rem}
+header p.q{font-size:1.1rem;max-width:34rem;font-weight:500}
+.grid{display:grid;grid-template-columns:1fr;gap:1.25rem}
+@media (min-width:900px){.grid{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}}
+.panel{background:var(--panel);border-radius:14px;padding:1rem}
+.live{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;gap:.5rem;background:var(--ink);color:var(--panel);border-radius:10px;padding:.55rem .75rem;margin:-.25rem 0 .9rem;font-size:.78rem;line-height:1.2}
+.live span{display:flex;flex-direction:column;align-items:flex-start}
+.live b{font-size:1rem;font-weight:800;font-variation-settings:"wdth" 110;color:var(--amber)}
+@media (min-width:900px){.live{display:none}}
+.presets{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.presets button{font:inherit;font-size:.82rem;font-weight:500;padding:.35rem .65rem;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.presets button:hover{border-color:var(--ink)}
+.presets button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.sw{border-top:1px solid var(--line);padding:.85rem 0}
+.sw:last-of-type{border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:.9rem}
+.row .name{flex:1;min-width:0}
+.row .name b{display:block;font-size:1.05rem;font-weight:800;font-variation-settings:"wdth" 108}
+.row .name span{display:block;color:var(--muted);font-size:.88rem}
+.tog{position:relative;width:66px;height:36px;border-radius:999px;border:0;cursor:pointer;background:var(--on);transition:background .18s;flex:none;padding:0}
+.tog::after{content:"";position:absolute;top:4px;left:34px;width:28px;height:28px;border-radius:50%;background:var(--knob);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .18s}
+.tog[aria-checked="false"]{background:var(--off)}
+.tog[aria-checked="false"]::after{left:4px}
+.tog:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.state{width:2.1rem;text-align:right;font-size:.82rem;font-weight:500;color:var(--muted);flex:none}
+.state.off{color:var(--off)}
+.years{display:none;margin:.7rem 0 0 0;padding-left:0}
+.sw.is-off .years{display:block}
+.years label{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:.3rem;gap:.5rem}
+.years label output{font-weight:800;font-variation-settings:"wdth" 108}
+input[type=range]{width:100%;accent-color:var(--amber);margin:0}
+details{margin-top:.5rem}
+summary{cursor:pointer;font-size:.85rem;color:var(--muted);list-style:none;display:inline-flex;align-items:center;gap:.35rem}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";display:inline-block;width:1em;font-weight:800}
+details[open] summary::before{content:"\2013"}
+.levers{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .9rem;margin-top:.6rem;font-size:.84rem}
+.levers label{display:flex;flex-direction:column;gap:.15rem;color:var(--muted)}
+.levers input{font:inherit;font-size:.95rem;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--line);padding:.15rem 0;width:100%}
+.levers input:focus{outline:none;border-bottom-color:var(--focus)}
+.levers p{grid-column:1/-1;color:var(--muted);margin:.2rem 0 0;font-size:.82rem}
+.read{display:grid;gap:1rem}
+.kpi{background:var(--panel);border-radius:14px;padding:1rem}
+.kpi .hd{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
+.kpi .hd h2{margin:0}
+.kpi .num{font-size:2rem;font-weight:800;font-variation-settings:"wdth" 112;line-height:1;letter-spacing:-.02em}
+.kpi .num small{font-size:.85rem;font-weight:500;color:var(--muted);margin-left:.4rem;font-variation-settings:"wdth" 100;letter-spacing:0}
+.kpi svg{width:100%;height:auto;display:block;margin-top:.5rem}
+.kpi .ax{fill:var(--muted);font-size:11px;font-family:inherit}
+.kpi .grid-l{stroke:var(--line);stroke-width:1}
+.kpi .base-l{stroke:var(--base);stroke-width:2;fill:none;stroke-dasharray:4 5}
+.kpi .band-a{fill:var(--band);stroke:none}
+.kpi .sc-l{stroke:var(--amber);stroke-width:3;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.verdict{background:var(--ink);color:var(--panel);border-radius:14px;padding:1.1rem 1.2rem}
+.verdict h2{color:var(--amber)}
+.verdict p{font-size:1.02rem}
+.verdict .var{display:flex;align-items:center;gap:.7rem;margin-top:.8rem;font-size:.9rem}
+.verdict .var i{display:inline-block;height:10px;border-radius:999px;background:var(--amber);min-width:10px;transition:width .25s}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}
+.actions button{font:inherit;font-size:.9rem;font-weight:500;padding:.55rem .9rem;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.actions button.primary{background:var(--amber);border-color:var(--amber);color:#17212E}
+.actions button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.toast{font-size:.85rem;color:var(--muted);min-height:1.2em;margin-top:.4rem}
+.how{margin-top:2rem;max-width:40rem;color:var(--muted);font-size:.92rem}
+.how b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Flip the<br>Switch</h1>
+  <p class="lede">Remove one thing from the world today. Give it some years to be replaced, or none. Watch what happens to the people, the economy and how long they live over the next century.</p>
+  <p class="q">The trap is the second slider. Almost everyone knows what they would switch off. Almost nobody has decided how many years to give the replacement.</p>
+</header>
+
+<div class="grid">
+  <section class="panel" aria-label="Switches">
+    <div class="live" id="live" aria-label="2126 readout"></div>
+    <h2>The board</h2>
+    <div class="presets" id="presets" role="group" aria-label="Preset worlds"></div>
+    <div id="board"></div>
+  </section>
+
+  <div class="read">
+    <section class="verdict" aria-live="polite">
+      <h2>Verdict</h2>
+      <p id="verdict"></p>
+      <div class="var"><span id="varlabel"></span><i id="varbar"></i></div>
+      <div class="actions">
+        <button class="primary" id="share">Copy link to this world</button>
+        <button id="copytext">Copy summary</button>
+        <button id="reset">Reset</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </section>
+    <section class="kpi" id="k-pop"></section>
+    <section class="kpi" id="k-gdp"></section>
+    <section class="kpi" id="k-le"></section>
+  </div>
+</div>
+
+<div class="how">
+  <h2>How it works</h2>
+  <p><b>The numbers are judgement calls. The mechanisms are the argument.</b> Every switch has four levers you can edit: its long-run effect on fertility, on growth, the shock it causes if removed overnight, and how many years its replacement takes to build.</p>
+  <p>The shock scales with the gap between the years you give and the build time. Give a switch its full build time and the shock disappears. Give it zero and you get the whole thing. Fertility effects add, growth effects compound, and a world with fewer people grows a smaller economy.</p>
+  <p>The shaded band is variance, not a forecast range. It widens with every check you remove. Hand government to a machine while removing countries and the band becomes a fork: the model shows the better branch and says so.</p>
+  <p>Built as a thought experiment by Vector56. Argue with the levers, then share your world.</p>
+</div>
+</div>
+
+<script>
+/* ===== MODEL ===== */
+const SW = [
+  {k:"c", name:"Countries", sub:"Borders, states, armies. One central democracy instead.",
+   fert:-0.15, growth:0.35, shock:8, mort:0.3, le:1.0, build:15, perm:false, v:2,
+   why:"Free movement of labour and a military dividend of about $2.7tn a year. The cost is a decade of institutional vacuum and one legislature with no policy competition."},
+  {k:"r", name:"Religion", sub:"Faith, religious law, religious parties.",
+   fert:-0.5, growth:0.15, shock:2, mort:0.2, le:1.0, build:20, perm:false, v:1,
+   why:"Religious law sets family law, girls' schooling and women's work across much of the world. Removing it lifts female participation and drops fertility below replacement almost everywhere."},
+  {k:"i", name:"Internet", sub:"The public network. Private circuits stay.",
+   fert:0.3, growth:-1.0, shock:14, mort:2, le:-3, build:20, perm:true, v:1,
+   why:"A short rebuild on 1990s architecture, then permanently slower knowledge diffusion. Development slows in poorer countries, which keeps fertility higher for longer."},
+  {k:"f", name:"Fossil fuels", sub:"Coal, oil and gas.",
+   fert:0, growth:0.12, shock:40, mort:8, le:1.0, build:25, perm:false, v:2,
+   why:"Half of world food depends on gas-made ammonia and diesel. Replacements take 20 to 30 years to build. The gap between those two numbers is a famine. Give it the build time and the famine disappears."},
+  {k:"m", name:"Money", sub:"Prices, not just paper. Central allocation instead.",
+   fert:0.1, growth:-1.2, shock:30, mort:3, le:-4, build:15, perm:false, v:3,
+   why:"Prices are the coordination signal. Without them nobody knows what people want, however good the arithmetic. Every historical attempt has gone the same way."},
+  {k:"a", name:"AI progress", sub:"Frontier AI frozen at today's level.",
+   fert:0.1, growth:-0.8, shock:0, mort:0, le:-2, build:0, perm:true, v:-1,
+   why:"Nothing breaks. You lose the compounding, in growth and in medicine, and the gap only shows after 2050. You also remove the tail risks."},
+  {k:"g", name:"Human government", sub:"Hand it to an AI instead.",
+   fert:-0.1, growth:0.3, shock:3, mort:0.1, le:3, build:10, perm:false, v:3, gov:true,
+   why:"Better crisis management and no export bans, so other shocks shrink by a third. Every check is also gone. With countries off there is no exit, and the future forks."},
+];
+const LEVERS=[["fert","Fertility, children per woman"],["growth","Growth, points a year"],["shock","GDP shock if removed overnight, %"],["mort","Excess deaths if removed overnight, % of people"],["le","Life expectancy, long run years"],["build","Years to build a replacement"]];
+
+function interp(pts,t){for(let i=1;i<pts.length;i++){if(t<=pts[i][0]){const [t0,v0]=pts[i-1],[t1,v1]=pts[i];return v0+(v1-v0)*(t-t0)/(t1-t0);}}return pts[pts.length-1][1];}
+const BP=[[0,8.2],[10,8.9],[24,9.7],[50,10.2],[60,10.3],[80,10.0],[100,9.5]];
+const BL=[[0,73.5],[10,75.5],[50,80],[100,84]];
+const gBase=t=>0.027-0.009*t/100;
+const ramp=(t,n)=>n<=0?1:Math.min(1,t/n);
+const tri=t=>{ /* excess-death profile over years 1..8, sums to 1 */ const w=[0,.06,.16,.26,.2,.14,.1,.05,.03]; return t<w.length?w[t]:0; };
+
+function baseline(){const pop=[],gdp=[],le=[];let g=115;for(let t=0;t<=100;t++){pop.push(interp(BP,t));le.push(interp(BL,t));gdp.push(g);g*=1+gBase(t);}return {pop,gdp,le};}
+const BASE=baseline();
+
+function simulate(state){
+  const on=SW.filter(s=>state[s.k]&&state[s.k].on).map(s=>({...s,...(state[s.k].lev||{}),years:state[s.k].years}));
+  const aiGov=on.some(s=>s.gov);
+  const noCountries=on.some(s=>s.k==="c");
+  const pop=[8.2],gdp=[115],le=[],sh=[];let pot=115,deaths=0,V=0;
+  for(const s of on){V+=s.v; if(s.gov){ if(noCountries)V+=2; if(s.years<5)V+=1; } if(s.k==="f"&&s.years>=s.build)V-=1;}
+  V=Math.max(0,V);
+  for(let t=0;t<=100;t++){
+    let fert=0,growth=0,shock=0,leAdj=0,mortRate=0,tempFert=0;
+    for(const s of on){
+      const scale=Math.max(0,1-(s.build>0?s.years/s.build:1));
+      const dampen=(aiGov&&!s.gov)?0.65:1;
+      fert+=s.fert*ramp(t,30);
+      growth+=s.growth/100*ramp(t,10);
+      // shock profile: rises over 3 years, holds to build time, then decays (half-life 8) unless permanent
+      let prof;
+      if(t<3)prof=t/3; else if(s.perm)prof=1; else if(t<s.build)prof=1; else prof=Math.pow(.5,(t-s.build)/8);
+      shock+=s.shock/100*scale*dampen*prof;
+      mortRate+=s.mort/100*scale*dampen*tri(t);
+      tempFert+=-0.8*scale*dampen*Math.min(1,s.mort/8)*(t>0&&t<=8?1:0);
+      leAdj+=s.le*ramp(t,30);
+      // acute life-expectancy dip from the shock, peaks year 3, half-life 6
+      const acute=s.k==="f"?9.5:s.k==="m"?2.5:s.k==="i"?2:s.k==="c"?1:0.3;
+      const ap=t<3?t/3:Math.pow(.5,(t-3)/6);
+      leAdj-=acute*scale*dampen*ap;
+    }
+    le.push(BASE.le[t]+leAdj);
+    sh.push(shock);
+    if(t<100){
+      const gb=Math.log(BASE.pop[t+1]/BASE.pop[t]);
+      const d=mortRate*pop[t]; deaths+=d;
+      const popGrowth=gb+0.0066*fert+0.0066*tempFert;
+      pop.push(pop[t]*(1+popGrowth)-d);
+      const devPop=Math.log(pop[t+1]/pop[t])-gb;
+      pot*=1+gBase(t)+growth+0.7*devPop;
+      gdp.push(pot*(1-Math.min(.8,shock)));
+    }
+  }
+  return {pop,gdp,le,deaths,V,aiGov,fork:aiGov&&noCountries,on};
+}
+/* ===== /MODEL ===== */
+
+/* ===== STATE ===== */
+const state={};
+SW.forEach(s=>state[s.k]={on:false,years:0,lev:{}});
+const PRESETS=[
+  ["Baseline",{}],["1 No countries",{c:0}],["2 No religion",{r:0}],["3 No internet",{i:0}],["4 No fossil fuels",{f:0}],["5 No money",{m:0}],["6 No AI",{a:0}],["7 All in one",{c:0,r:0,f:0,g:0}],["8 All in one, fuels phased out",{c:0,r:0,f:30,g:0}],
+];
+function applyPreset(p){SW.forEach(s=>{state[s.k].on=p.hasOwnProperty(s.k);state[s.k].years=p[s.k]||0;});render();}
+function readHash(){const h=location.hash.replace(/^#/,"");if(!h)return;SW.forEach(s=>{state[s.k].on=false;state[s.k].years=0;});h.split("&").forEach(kv=>{const [k,v]=kv.split("=");if(state[k]){state[k].on=true;state[k].years=Math.max(0,Math.min(50,parseInt(v)||0));}});}
+function writeHash(){const parts=SW.filter(s=>state[s.k].on).map(s=>s.k+"="+state[s.k].years);history.replaceState(null,"","#"+parts.join("&"));}
+
+/* ===== UI ===== */
+const board=document.getElementById("board");
+SW.forEach(s=>{
+  const el=document.createElement("div");el.className="sw";el.id="sw-"+s.k;
+  el.innerHTML=`<div class="row"><div class="name"><b>${s.name}</b><span>${s.sub}</span></div>
+    <span class="state" id="st-${s.k}">on</span>
+    <button class="tog" role="switch" aria-checked="true" aria-label="${s.name}" data-k="${s.k}"></button></div>
+    <div class="years"><label><span>Replace what it did over</span><output id="yo-${s.k}">0 years</output></label>
+    <input type="range" min="0" max="50" step="1" value="0" data-k="${s.k}" aria-label="Years to replace ${s.name}">
+    <details><summary>Why, and the levers</summary><div class="levers">
+    ${LEVERS.map(([lk,ln])=>`<label>${ln}<input type="number" step="any" value="${s[lk]}" data-k="${s.k}" data-lev="${lk}"></label>`).join("")}
+    <p>${s.why}</p></div></details></div>`;
+  board.appendChild(el);
+});
+board.addEventListener("click",e=>{const b=e.target.closest(".tog");if(!b)return;const k=b.dataset.k;state[k].on=!state[k].on;render();});
+board.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k)return;if(e.target.type==="range"){state[k].years=+e.target.value;}else if(e.target.dataset.lev){const v=parseFloat(e.target.value);if(!isNaN(v))state[k].lev[e.target.dataset.lev]=v;}render();});
+const presetsEl=document.getElementById("presets");
+PRESETS.forEach(([n,p],i)=>{const b=document.createElement("button");b.textContent=n;b.dataset.i=i;b.addEventListener("click",()=>applyPreset(p));presetsEl.appendChild(b);});
+
+function fmtNum(n){return n>=1000?n.toLocaleString("en-US",{maximumFractionDigits:0}):n.toFixed(0);}
+function chart(id,title,unit,base,sc,V,fork,yfmt,bs){
+  const W=600,H=230,L=42,R=14,T=16,B=26;
+  const band=t=>sc[t]*Math.min(.6,V*0.015*bs)*Math.pow(t/100,1.5);
+  let lo=Infinity,hi=-Infinity;
+  for(let t=0;t<=100;t++){lo=Math.min(lo,base[t],sc[t]-band(t));hi=Math.max(hi,base[t],sc[t]+band(t));}
+  const pad=(hi-lo)*.08;lo-=pad;hi+=pad;if(lo<0&&id!=="k-le")lo=0;
+  const x=t=>L+(W-L-R)*t/100, y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+  const path=arr=>arr.map((v,t)=>(t?"L":"M")+x(t).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
+  const up=sc.map((v,t)=>v+band(t)), dn=sc.map((v,t)=>v-band(t));
+  const area=path(up)+" "+dn.map((v,t)=>"L"+x(100-t).toFixed(1)+" "+y(dn[100-t]).toFixed(1)).join(" ")+" Z";
+  const ticks=4,tk=[];for(let i=0;i<=ticks;i++){const v=lo+(hi-lo)*i/ticks;tk.push(`<line class="grid-l" x1="${L}" x2="${W-R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="ax" x="${L-6}" y="${(y(v)+4).toFixed(1)}" text-anchor="end">${yfmt(v)}</text>`);}
+  const xt=[0,25,50,75,100].map(t=>`<text class="ax" x="${x(t).toFixed(1)}" y="${H-8}" text-anchor="middle">${2026+t}</text>`).join("");
+  const end=sc[100],b=base[100],d=(end/b-1)*100;
+  const delta=Math.abs(d)<0.5?"same as baseline":(d>0?"+":"")+d.toFixed(0)+"% vs baseline";
+  document.getElementById(id).innerHTML=`<div class="hd"><h2>${title}</h2><div class="num">${yfmt(end)}<small>${unit} in 2126, ${delta}${fork?", better branch":""}</small></div></div>
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}, 2026 to 2126, scenario versus baseline">${tk.join("")}${xt}
+  <path class="band-a" d="${area}"/><path class="base-l" d="${path(base)}"/><path class="sc-l" d="${path(sc)}"/></svg>`;
+}
+
+function verdictText(r){
+  const on=r.on;
+  if(!on.length)return "Nothing switched. This is the trajectory everything else is measured against: 9.5 billion people, a $1,000 trillion economy, 84 years of life.";
+  const p=r.pop[100],g=r.gdp[100],l=r.le[100];
+  const bp=BASE.pop[100],bg=BASE.gdp[100],bl=BASE.le[100];
+  const parts=[];
+  const dm=r.deaths*1000;
+  if(dm>=50){
+    const hard=on.filter(s=>s.mort>=2&&s.years<s.build).sort((a,b)=>b.mort-a.mort)[0];
+    parts.push(`About ${dm>=1000?(dm/1000).toFixed(1)+" billion":Math.round(dm/10)*10+" million"} people die in the first decade, before the replacements are built.`+(hard?` Give ${hard.name.toLowerCase()} its ${hard.build} years and that number goes to zero.`:""));
+  }else if(on.some(s=>s.years>=s.build&&s.mort>=2)){
+    parts.push("No famine. The phase-out is long enough for each replacement to arrive before the thing it replaces is gone.");
+  }
+  const gd=(g/bg-1)*100,pd=(p/bp-1)*100,ld=l-bl;
+  parts.push(`By 2126 the world has ${p.toFixed(1)} billion people (${Math.abs(pd)<0.5?"same as baseline":(pd>0?"+":"")+pd.toFixed(0)+"%"}), an economy ${Math.abs(gd)<3?"about the size of baseline":(gd>0?gd.toFixed(0)+"% larger":Math.abs(gd).toFixed(0)+"% smaller")}, and people live ${Math.abs(ld)<.5?"about as long as":ld>0?ld.toFixed(0)+" years longer than":Math.abs(ld).toFixed(0)+" years less than"} they would have.`);
+  if(r.fork)parts.push("This world forks. With no countries and a machine in charge there is no exit if the machine is wrong. The charts show the branch where it is not.");
+  else if(r.aiGov)parts.push("An AI government handles the shocks better than people do. It also removes every check except the ones countries still provide.");
+  return parts.join(" ");
+}
+const VL=V=>V<=1?"Low variance":V<=4?"Medium variance":V<=7?"High variance":"Extreme variance";
+
+function render(){
+  SW.forEach(s=>{
+    const el=document.getElementById("sw-"+s.k),st=state[s.k];
+    el.classList.toggle("is-off",st.on);
+    el.querySelector(".tog").setAttribute("aria-checked",String(!st.on));
+    const lab=document.getElementById("st-"+s.k);lab.textContent=st.on?"off":"on";lab.classList.toggle("off",st.on);
+    el.querySelector("input[type=range]").value=st.years;
+    document.getElementById("yo-"+s.k).textContent=st.years===0?"0 years, hard stop":st.years+" years";
+  });
+  const r=simulate(state);
+  chart("k-pop","People",'bn',BASE.pop,r.pop,r.V,r.fork,v=>v.toFixed(1),1);
+  chart("k-gdp","Economy",'$tn',BASE.gdp,r.gdp,r.V,r.fork,v=>"$"+fmtNum(v),1.3);
+  chart("k-le","Life expectancy",'years',BASE.le,r.le,r.V,r.fork,v=>v.toFixed(0),0.3);
+  const lv=document.getElementById("live");lv.innerHTML=`<span><b>${r.pop[100].toFixed(1)}bn</b> people</span><span><b>$${fmtNum(r.gdp[100])}tn</b> economy</span><span><b>${r.le[100].toFixed(0)}</b> years</span><span><b>${r.deaths*1000<1?"0":r.deaths*1000>=1000?(r.deaths).toFixed(1)+"bn":Math.round(r.deaths*1000)+"m"}</b> lost</span>`;
+  document.getElementById("verdict").textContent=verdictText(r);
+  document.getElementById("varlabel").textContent=VL(r.V)+(r.fork?", forked":"");
+  document.getElementById("varbar").style.width=Math.min(100,10+r.V*9)+"%";
+  presetsEl.querySelectorAll("button").forEach((b,i)=>{const p=PRESETS[i][1];const match=SW.every(s=>(state[s.k].on===p.hasOwnProperty(s.k))&&(!state[s.k].on||state[s.k].years===(p[s.k]||0)));b.setAttribute("aria-pressed",String(match));});
+  writeHash();
+}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;setTimeout(()=>{if(t.textContent===m)t.textContent="";},2500);}
+document.getElementById("share").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(location.href);toast("Link copied.");}catch(e){toast("Copy this address bar: "+location.href);}});
+document.getElementById("copytext").addEventListener("click",async()=>{const r=simulate(state);const sw=r.on.length?r.on.map(s=>s.name+(s.years?` (${s.years} yrs)`:" (hard stop)")).join(", "):"nothing";const txt=`Flip the Switch. I switched off: ${sw}.\n${verdictText(r)}\n${location.href}`;try{await navigator.clipboard.writeText(txt);toast("Summary copied.");}catch(e){toast("Could not copy.");}});
+document.getElementById("reset").addEventListener("click",()=>{SW.forEach(s=>{state[s.k]={on:false,years:0,lev:{}};board.querySelectorAll(`input[data-k="${s.k}"][data-lev]`).forEach(i=>i.value=s[i.dataset.lev]);});render();});
+window.addEventListener("hashchange",()=>{readHash();render();});
+readHash();render();
+</script>
+</body>
+</html>
